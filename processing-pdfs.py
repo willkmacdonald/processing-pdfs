@@ -23,7 +23,7 @@ try:
     from docling.datamodel.pipeline_options import PdfPipelineOptions
 except ImportError as e:
     print(f"Error importing Docling: {e}")
-    print("Please install Docling: pip install docling")
+    print("Please install Docling or run in the provided container")
     exit(1)
 
 # Configure logging
@@ -397,12 +397,25 @@ class PDFPreProcessor:
         """Safely get page count from result."""
         try:
             if hasattr(result.document, 'num_pages'):
-                return result.document.num_pages
+                num_pages = result.document.num_pages
+                # If it's a method, call it
+                if callable(num_pages):
+                    return num_pages()
+                # If it's a property, return it
+                elif isinstance(num_pages, int):
+                    return num_pages
+                else:
+                    return 0
             elif hasattr(result.document, 'pages'):
-                return len(result.document.pages)
+                pages = result.document.pages
+                if pages:
+                    return len(pages)
+                else:
+                    return 0
             else:
                 return 0
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Could not get page count: {e}")
             return 0
     
     def _save_results(self, pdf_path: Path, extracted_data: Dict[str, Any]) -> None:
@@ -431,14 +444,33 @@ class PDFPreProcessor:
             return {k: self._clean_for_json_serialization(v) for k, v in data.items()}
         elif isinstance(data, (list, tuple)):
             return [self._clean_for_json_serialization(item) for item in data]
+        elif isinstance(data, (str, int, float, bool, type(None))):
+            return data
         elif callable(data):
+            # Try to call it if it looks like a simple property getter
+            try:
+                if hasattr(data, '__name__') and data.__name__ in ['num_pages', 'page_count']:
+                    result = data()
+                    if isinstance(result, (int, float, str, bool)):
+                        return result
+            except:
+                pass
             return f"<method: {data.__name__}>" if hasattr(data, '__name__') else str(data)
         elif hasattr(data, '__dict__'):
             return str(data)
-        elif isinstance(data, (str, int, float, bool, type(None))):
-            return data
         else:
-            return str(data)
+            # For any other object type, try to convert to a basic type
+            try:
+                if hasattr(data, '__len__') and not isinstance(data, str):
+                    return len(data)
+                elif hasattr(data, '__int__'):
+                    return int(data)
+                elif hasattr(data, '__str__'):
+                    return str(data)
+                else:
+                    return str(data)
+            except:
+                return str(data)
     
     def _print_summary(self):
         """Print processing summary."""
