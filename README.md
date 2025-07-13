@@ -41,17 +41,17 @@ A high-performance PDF document processor that extracts structured content using
 
 ```bash
 # Process PDFs with default settings
-python processing-pdfs.py
+python src/processing-pdfs.py
 
 # Process with specific profile
-python processing-pdfs.py --profile fast
-python processing-pdfs.py --profile quality
+python src/processing-pdfs.py --profile fast
+python src/processing-pdfs.py --profile quality
 
 # Specify input/output directories
-python processing-pdfs.py --input-dir ./my-pdfs --output-dir ./results
+python src/processing-pdfs.py --input-dir ./my-pdfs --output-dir ./results
 
 # Enable debug logging
-python processing-pdfs.py --debug
+python src/processing-pdfs.py --debug
 ```
 
 ### Processing Profiles
@@ -166,7 +166,7 @@ Image descriptions and classifications...
 ### Debug Mode
 Enable detailed logging to troubleshoot issues:
 ```bash
-python processing-pdfs.py --debug
+python src/processing-pdfs.py --debug
 ```
 
 ## Dependencies
