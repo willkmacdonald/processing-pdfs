@@ -36,6 +36,10 @@ debug.log
 pip-log.txt
 pip-delete-this-directory.txt
 
+# input and output files
+input/
+output/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
